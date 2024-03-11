@@ -54,9 +54,9 @@ PostgreSQL también admite informar sobre información dinámica sobre lo que es
 
 Hay tres tipos de estadística:
 
-Data distribution statistics
-Extended statistics
-Monitoring statistics
+1) Data distribution statistics
+2) Extended statistics
+3) Monitoring statistics
 
 
 Data distribution statistics:
