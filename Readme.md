@@ -88,3 +88,70 @@ Se pide:
 • Cargar la información del fichero datos_empleados.csv, datos_proyectos.csv y datos_trabaja_proyectos.csv en dichas tablas de tal manera que sea lo más eficiente posible.
 
 • Indicar los tiempos de carga.
+
+```
+create database proyectos_empresa;
+```
+
+```
+create TABLE empleados (
+    numero_empleado NUMERIC PRIMARY KEY,
+    nombre TEXT,
+    apellidos TEXT,
+    salario NUMERIC
+);
+```
+
+```
+create TABLE proyectos (
+    numero_proyecto NUMERIC PRIMARY KEY,
+    nombre TEXT,
+    localizacion TEXT,
+    coste NUMERIC
+);
+```
+
+```
+create TABLE trabaja_proyectos (
+    numero_empleado NUMERIC,
+    numero_proyecto NUMERIC,
+    horas NUMERIC,
+    PRIMARY KEY (numero_empleado, numero_proyecto),
+    FOREIGN KEY (numero_empleado) REFERENCES empleados(numero_empleado) ON DELETE RESTRICT,
+    FOREIGN KEY (numero_proyecto) REFERENCES proyectos(numero_proyecto) ON DELETE RESTRICT
+);
+```
+
+
+```
+\timing
+
+Timing is on.
+```
+
+```
+\copy empleados(numero_empleado,nombre,apellidos,salario) FROM '/tmp/datos_empleados.csv' DELIMITER ',' CSV
+COPY 2000000
+Time: 4191.524 ms (00:04.192)
+```
+
+```
+\copy proyectos(numero_proyecto,nombre,localizacion,coste) FROM '/tmp/datos_proyectos.csv' DELIMITER ',' CSV
+COPY 100000
+Time: 274.249 ms
+```
+
+```
+\copy trabaja_proyectos(numero_empleado,numero_proyecto,horas) FROM '/tmp/datos_trabaja_proyectos.csv' DELIMITER ',' CSV
+COPY 10000000
+Time: 293663.817 ms (04:53.664)
+```
+
+Comprobamos que ha necesito mucho más tiempo para la última carga de datos. Lo cual es lógico ya que tiene que comprobar las referencias de intregridad de datos entre las otras dos tablas. Pero es que además, el CSV asociado a esta carga, tiene un peso mucho mas elevado.
+
+```
+root@postgresql01:/home/felix/pl2# du -sh *
+93M     datos_empleados.csv
+4.5M    datos_proyectos.csv
+171M    datos_trabaja_proyectos.csv
+```
