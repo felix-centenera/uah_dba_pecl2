@@ -93,6 +93,11 @@ Se pide:
 create database proyectos_empresa;
 ```
 
+Creamos la base de datos de proyectos de empresas, posteriormente especificamos la tabla empleados y la creamos estipulando la clave primaria numero_empleado, posteriormente creamos
+la tabla proyectos de la misma manera que la tabla anterior, identificando numero_proyecto como clave primaria, por ultimo creamos la tabla trabaja_proyectos, donde declaramos los parametros
+numero_empleado y numero_proyecto como clave primaria de la tabla y como clave foranea de las tablas empleados y proyectos respectivamente, y establecemos la restricción RESTRICT que 
+garantiza que no se puedan eliminar registros en las tablas relacionadas si hay registros en la tabla trabaja_proyectos que dependen de ellos.
+
 ```
 create TABLE empleados (
     numero_empleado NUMERIC PRIMARY KEY,
@@ -154,4 +159,52 @@ root@postgresql01:/home/felix/pl2# du -sh *
 93M     datos_empleados.csv
 4.5M    datos_proyectos.csv
 171M    datos_trabaja_proyectos.csv
+```
+
+```
+SELECT * from pg_catalog.pg_stat_progress_copy;
+```
+
+
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+
+
+
+Cuestión 3: Mostrar las estadísticas obtenidas en este momento para cada tabla. ¿Qué
+se almacena? ¿Son correctas? Si no son correctas, ¿cómo se pueden actualizar?
+
+Para saber si estan actualizadas:
+```
+select * from pg_stat_user_tables 
+```
+Ademas de esto sabemos que para actualizarla hay que hacer un analyze.
+
+
+
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+
+
+
+
+Cuestión 4: Aplicar el comando EXPLAIN a una consulta que obtenga la información
+de los empleados con salario de más de 96000 euros. ¿Son correctos los resultados
+del comando EXPLAIN? ¿Por qué? Comparar con lo que se obtendría con lo visto en
+teoría obteniendo las estadísticas de las tablas con postgres.
+
+(FALTA COMPARAR CON LO VISTO EN TEORÍA)
+
+```
+proyectos_empresas=# explain select * from empleados where salario > 96000
+proyectos_empresas-# ;
+                                   QUERY PLAN                                    
+---------------------------------------------------------------------------------
+ Gather  (cost=1000.00..40125.37 rows=100357 width=41)
+   Workers Planned: 2
+   ->  Parallel Seq Scan on empleados  (cost=0.00..29089.67 rows=41815 width=41)
+         Filter: (salario > '96000'::numeric)
+(4 rows)
 ```
