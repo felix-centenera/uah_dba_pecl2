@@ -557,7 +557,7 @@ teoría obteniendo las estadísticas de las tablas con postgres.
 Cuestión 5: Aplicar el comando EXPLAIN a una consulta que obtenga la información de los proyectos en los cuales el empleado trabaja 8 horas. ¿Son correctos los
 resultados del comando EXPLAIN? ¿Por qué? Comparar con lo que se obtendría con lo visto en teoría obteniendo las estadísticas de las tablas con postgres.
 
-(FALTA COMPARAR CON LO VISTO EN TEORÍA)
+ (FALTA COMPARAR CON LO VISTO EN TEORÍA)
 
 EXPLAIN SELECT p.* FROM proyectos p JOIN trabaja_proyectos tp ON p.numero_proyecto = tp.numero_proyecto WHERE tp.horas = 8;
 
