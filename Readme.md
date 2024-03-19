@@ -565,3 +565,709 @@ EXPLAIN SELECT p.* FROM proyectos p JOIN trabaja_proyectos tp ON p.numero_proyec
 ----------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------
+
+
+Cuestión 6: Aplicar el comando EXPLAIN a una consulta que obtenga la información
+de los proyectos que tienen un coste mayor de 10000, y tienen empleados de salario
+de 24000 euros y trabajan menos de 3 horas en ellos. ¿Son correctos los resultados
+del comando EXPLAIN? ¿Por qué? Comparar con lo que se obtendría con lo visto en
+teoría obteniendo las estadísticas de las tablas con postgres.
+
+
+
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+
+
+
+Cuestión 7: Generar los datos solicitados al comienzo de la práctica para la base de
+datos Logística creando un programa para tal fin que deberá de estar en un único
+fichero y comentado. Pegar el código del fichero en el cuadro de texto que se adjunta
+a continuación.
+
+1º Generar las bases de datos:
+
+createDBpl2.sql :
+
+```
+-- Database generated with pgModeler (PostgreSQL Database Modeler).
+-- pgModeler version: 0.9.4
+-- PostgreSQL version: 13.0
+-- Project Site: pgmodeler.io
+-- Model Author: ---
+
+-- Database creation must be performed outside a multi lined SQL file. 
+-- These commands were put in this file only as a convenience.
+-- 
+-- object: new_database | type: DATABASE --
+-- DROP DATABASE IF EXISTS new_database;
+-- CREATE DATABASE logistica;
+-- ddl-end --
+
+
+-- object: public.bultos | type: TABLE --
+-- DROP TABLE IF EXISTS public.bultos CASCADE;
+CREATE TABLE public.bultos (
+        id_bulto integer NOT NULL,
+        direccion_origen text NOT NULL,
+        direccion_destino text NOT NULL,
+        provincia_origen text NOT NULL,
+        provincia_destino text NOT NULL,
+        peso real NOT NULL,
+        fecha_salida date NOT NULL,
+        fecha_llegada date NOT NULL,
+        matricula_vehiculos char(7),
+        id_cliente_clientes integer,
+        CONSTRAINT bultos_pk PRIMARY KEY (id_bulto)
+);
+-- ddl-end --
+ALTER TABLE public.bultos OWNER TO postgres;
+-- ddl-end --
+
+-- object: public.vehiculos | type: TABLE --
+-- DROP TABLE IF EXISTS public.vehiculos CASCADE;
+CREATE TABLE public.vehiculos (
+        matricula char(7) NOT NULL,
+        marca text NOT NULL,
+        modelo text NOT NULL,
+        kilometros integer NOT NULL,
+        fecha_matricula date NOT NULL,
+        "DNI_conductores" char(9),
+        CONSTRAINT vehiculos_pk PRIMARY KEY (matricula)
+);
+-- ddl-end --
+ALTER TABLE public.vehiculos OWNER TO postgres;
+-- ddl-end --
+
+-- object: public.empresas | type: TABLE --
+-- DROP TABLE IF EXISTS public.empresas CASCADE;
+CREATE TABLE public.empresas (
+        "CIF" char(9) NOT NULL,
+        nombre text NOT NULL,
+        direccion text NOT NULL,
+        "Provincia" text NOT NULL,
+        email text NOT NULL,
+        telefono integer NOT NULL,
+        CONSTRAINT email_unique UNIQUE (email),
+        CONSTRAINT telefono_unique UNIQUE (telefono),
+        CONSTRAINT emresas_pk PRIMARY KEY ("CIF")
+);
+-- ddl-end --
+ALTER TABLE public.empresas OWNER TO postgres;
+-- ddl-end --
+
+-- object: public.conductores | type: TABLE --
+-- DROP TABLE IF EXISTS public.conductores CASCADE;
+CREATE TABLE public.conductores (
+        "DNI" char(9) NOT NULL,
+        nombre text NOT NULL,
+        fecha_contrato date NOT NULL,
+        telefono integer NOT NULL,
+        salario real NOT NULL,
+        "CIF_empresas" char(9),
+        CONSTRAINT conductores_pk PRIMARY KEY ("DNI")
+);
+-- ddl-end --
+ALTER TABLE public.conductores OWNER TO postgres;
+-- ddl-end --
+
+-- object: public.clientes | type: TABLE --
+-- DROP TABLE IF EXISTS public.clientes CASCADE;
+CREATE TABLE public.clientes (
+        id_cliente integer NOT NULL,
+        nombre text NOT NULL,
+        direccion text NOT NULL,
+        provincia text NOT NULL,
+        email text NOT NULL,
+        telefono integer NOT NULL,
+        CONSTRAINT telefono_cliente_unique UNIQUE (email),
+        CONSTRAINT email_cliente_unique UNIQUE (email),
+        CONSTRAINT clientes_pk PRIMARY KEY (id_cliente)
+);
+-- ddl-end --
+ALTER TABLE public.clientes OWNER TO postgres;
+-- ddl-end --
+
+-- object: vehiculos_fk | type: CONSTRAINT --
+-- ALTER TABLE public.bultos DROP CONSTRAINT IF EXISTS vehiculos_fk CASCADE;
+ALTER TABLE public.bultos ADD CONSTRAINT vehiculos_fk FOREIGN KEY (matricula_vehiculos)
+REFERENCES public.vehiculos (matricula) MATCH FULL
+ON DELETE RESTRICT ON UPDATE RESTRICT;
+-- ddl-end --
+
+-- object: clientes_fk | type: CONSTRAINT --
+-- ALTER TABLE public.bultos DROP CONSTRAINT IF EXISTS clientes_fk CASCADE;
+ALTER TABLE public.bultos ADD CONSTRAINT clientes_fk FOREIGN KEY (id_cliente_clientes)
+REFERENCES public.clientes (id_cliente) MATCH FULL
+ON DELETE RESTRICT ON UPDATE RESTRICT;
+-- ddl-end --
+
+-- object: empresas_fk | type: CONSTRAINT --
+-- ALTER TABLE public.conductores DROP CONSTRAINT IF EXISTS empresas_fk CASCADE;
+ALTER TABLE public.conductores ADD CONSTRAINT empresas_fk FOREIGN KEY ("CIF_empresas")
+REFERENCES public.empresas ("CIF") MATCH FULL
+ON DELETE RESTRICT ON UPDATE RESTRICT;
+-- ddl-end --
+
+-- object: conductores_fk | type: CONSTRAINT --
+-- ALTER TABLE public.vehiculos DROP CONSTRAINT IF EXISTS conductores_fk CASCADE;
+ALTER TABLE public.vehiculos ADD CONSTRAINT conductores_fk FOREIGN KEY ("DNI_conductores")
+REFERENCES public.conductores ("DNI") MATCH FULL
+ON DELETE RESTRICT ON UPDATE RESTRICT;
+-- ddl-end --
+```
+
+```
+sudo -u postgres psql -d logistica -f createDBpl2.sql 
+```
+
+```
+CREATE TABLE
+ALTER TABLE
+CREATE TABLE
+ALTER TABLE
+CREATE TABLE
+ALTER TABLE
+CREATE TABLE
+ALTER TABLE
+CREATE TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+```
+
+```
+\l
+                                                           List of databases
+       Name        |  Owner   | Encoding | Locale Provider |   Collate   |    Ctype    | ICU Locale | ICU Rules |   Access privileges   
+-------------------+----------+----------+-----------------+-------------+-------------+------------+-----------+-----------------------
+ logistica         | postgres | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |            |           | 
+```
+
+```
+\c logistica
+You are now connected to database "logistica" as user "postgres".
+```
+
+```
+logistica=# \dt
+            List of relations
+ Schema |    Name     | Type  |  Owner   
+--------+-------------+-------+----------
+ public | bultos      | table | postgres
+ public | clientes    | table | postgres
+ public | conductores | table | postgres
+ public | empresas    | table | postgres
+ public | vehiculos   | table | postgres
+(5 rows)
+```
+
+La generacíon de datos debe seguir el siguiente orden:
+
+```
+EMPRESAS ----> CONDUCTORES ---->  CLIENTES ----> VEHICULOS ---->  BULTOS
+```
+
+Basado en ese orden para respetar la integridad de datos, se generaran los registros mediantes funciones. Un csv por cada tabla.
+En el siguiente apartado se hará la carga. Es importante que la carga se realice respetando el orden.
+
+
+generateRandomDat.py: 
+```
+from datetime import datetime, timedelta
+import random
+import string
+import csv
+
+##########################################################################################
+
+# GENERADOR DE CIFs
+
+        
+# GENERADOR DE NOMBRES DE EMPRESA       
+def obtener_nombres_empresas():
+    nombres_empresas = []
+    with open('companies.csv', newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            nombres_empresas.append(row[1])  
+    return nombres_empresas
+
+
+def generar_cif(cifs_generados, Provincia):
+    while True:
+        # Selecciona aleatoriamente un tipo de CIF (persona jurídica o persona física)
+        tipo_cif = random.choice(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'P', 'Q', 'R', 'S', 'U', 'V', 'N', 'W'])
+        codigoProvincia= Provincia[0]
+        # Genera los 7 dígitos aleatorios para el CIF
+        numeros = ''.join(random.choices(string.digits, k=6))
+
+        # Calcula la letra de control
+        letras_cif = 'JABCDEFGHI'
+        suma = sum(int(n) if i % 2 else int(n)*2//10 + int(n)*2%10 for i, n in enumerate(numeros))
+        if (10 - suma % 10) == 10:
+            letra_control = 'J'  # Como el residuo es 0, la letra de control sería 'J'
+        else:
+            letra_control = letras_cif[10 - suma % 10]
+
+        # Concatena todos los componentes para formar el CIF completo
+        cif = tipo_cif + codigoProvincia + numeros + letra_control
+        if cif not in cifs_generados:
+                cifs_generados.add(cif)
+                return cif
+
+
+# GENERADOR DE NOMBRES DE CALLE    
+def obtener_nombres_calles():
+    nombres_calles = []
+    with open('calles.csv', newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            nombres_calles.append(row[3])  
+    return nombres_calles
+
+def obtener_provincia_aleatoria():
+    provincias_espanolas = [
+        "Alava", "Albacete", "Alicante", "Almeria", "Asturias", "Avila", "Badajoz", "Barcelona", 
+        "Burgos", "Caceres", "Cádiz", "Cantabria", "Castellon", "Ceuta", "Ciudad Real", "Cordoba", 
+        "Cuenca", "Girona", "Las Palmas", "Granada", "Guadalajara", "Guipuzcoa", "Huelva", "Huesca", 
+        "Illes Balears", "Jaen", "La Coruna", "La Rioja", "Leon", "Lleida", "Lugo", "Madrid", "Malaga", 
+        "Melilla", "Murcia", "Navarra", "Ourense", "Palencia", "Pontevedra", "Salamanca", "Santa Cruz de Tenerife", 
+        "Segovia", "Sevilla", "Soria", "Tarragona", "Teruel", "Toledo", "Valencia", "Valladolid", "Vizcaya", 
+        "Zamora", "Zaragoza"
+    ]
+    return random.choice(provincias_espanolas)
+
+
+def generar_email_aleatorio():
+    dominios = ["gmail.com", "hotmail.com", "yahoo.com", "outlook.com", "uah.com"]
+    nombre_usuario = ''.join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5, 10)))
+    dominio = random.choice(dominios)
+    return f"{nombre_usuario}@{dominio}"
+
+def generar_telefono_aleatorio(conjunto_telefonos):
+    while True:
+        prefijo = random.choice(['6', '7', '8', '9'])
+        numero = ''.join(random.choices('0123456789', k=8))
+        telefono = f"{prefijo}{numero}"
+        if telefono not in conjunto_telefonos:
+            conjunto_telefonos.add(telefono)
+            return telefono
+
+def generar_datos_empresa(num_empresas):
+   nombres_empresas = obtener_nombres_empresas()
+   nombres_calles = obtener_nombres_calles()
+   with open('dataRandom/empresas.dat', 'w') as data: 
+    for i in range(num_empresas):
+        nombre = nombres_empresas[i]
+        direccion = random.choice(nombres_calles)
+        Provincia = obtener_provincia_aleatoria()
+        CIF =  generar_cif(cifs_generados, Provincia)
+        email = str(i) + generar_email_aleatorio()
+        telefono = generar_telefono_aleatorio(conjunto_telefonos)
+        data.write(f"{CIF};{nombre};{direccion};{Provincia};{email};{telefono}\n")
+
+##########################################################################################
+
+# GENERADOR DNI
+def generar_dni(dnis_generados):
+    while True:
+        numeros = ''.join(random.choices('0123456789', k=8))
+        letra = 'TRWAGMYFPDXBNJZSQVHLCKE'[int(numeros) % 23]
+        dni = numeros + letra
+        if dni not in dnis_generados:
+            dnis_generados.add(dni)
+            return dni
+        
+
+# GENERAR NOMBRES         
+def generar_nombre():
+    nombres = [
+        "Antonio", "María", "Manuel", "Jose", "Ana", "Francisco", "Isabel", "Luis", "Carmen", "Javier",
+        "Pilar", "David", "Laura", "Pedro", "Marta", "Juan", "Sara", "Miguel", "Elena", "Carlos",
+        "Raquel", "Josefa", "Ángel", "Sonia", "Fernando", "Nuria", "Diego", "Eva", "Jorge", "Beatriz",
+        "Adrián", "Cristina", "Rubén", "Patricia", "Rafael", "Silvia", "Daniel", "Monica", "Alejandro", "Teresa",
+        "Jordi", "Noelia", "Álvaro", "Natalia", "Roberto", "Lorena", "Ángela", "Rosa", "Sergio", "Lucía",
+        "Jesús", "Marina", "Víctor", "Julia", "Alberto", "Inés", "Raul", "Miriam", "Fernando", "Esther",
+        "Ivan", "Olga", "Óscar", "Celia", "Guillermo", "Gemma", "Joaquín", "Paula", "Alfonso", "Irene",
+        "Emilio", "Nerea", "Jordi", "Alicia", "Roberto", "Elsa", "José Manuel", "Adela", "Álex", "Clara",
+        "Felipe", "Sofía", "Vicente", "Marisol", "Nicolás", "Cristina", "Ignacio", "Verónica", "Ramón", "Estefanía",
+        "Xavier", "Celia", "Pablo", "Elisa", "Víctor Manuel", "Judith", "Luis Miguel", "Lucía", "Juan José", "Mónica"
+        # Puedes agregar más nombres según sea necesario
+    ]
+    apellidos = [
+        "García", "Fernández", "González", "Rodríguez", "López", "Martínez", "Sánchez", "Pérez", "Martín", "Gómez",
+        "Ruiz", "Hernández", "Díaz", "Moreno", "Álvarez", "Romero", "Alonso", "Gutiérrez", "Navarro", "Torres",
+        "Domínguez", "Vázquez", "Ramos", "Gil", "Ramírez", "Serrano", "Blanco", "Suárez", "Molina", "Morales"
+        # Puedes agregar más apellidos según sea necesario
+    ]
+    nombre = random.choice(nombres)
+    apellido = random.choice(apellidos)  
+    # Devolvemos el nombre completo
+    return f"{nombre} {apellido}"
+
+def generar_fecha_contrato_aleatoria():
+    # Seleccionar un año aleatorio entre 1980 y 2020
+    año = random.randint(1980, 2020)
+    # Seleccionar un mes y un día aleatorio dentro del año seleccionado
+    mes = random.randint(1, 12)
+     # Si el mes es febrero (2), generamos el día aleatoriamente entre 1 y 28
+    if mes == 2:
+        dia = random.randint(1, 28)
+    # Si el mes tiene 30 días, generamos el día aleatoriamente entre 1 y 30
+    elif mes in [4, 6, 9, 11]:
+        dia = random.randint(1, 30)
+    # Si el mes tiene 31 días, generamos el día aleatoriamente entre 1 y 31
+    else:
+        dia = random.randint(1, 31)    
+    # Devolver la fecha de contrato generada
+    return datetime(año, mes, dia)
+
+def generar_sueldo_aleatorio():
+    return random.randrange(20000, 30000)
+
+
+def seleccionar_cif_aleatorio(cifs_generados):
+    # Verifica si hay CIFs en el conjunto
+    if cifs_generados:
+        # Elige un CIF aleatorio del conjunto y lo devuelve
+        return random.choice(list(cifs_generados))
+    else:
+        # Devuelve None si el conjunto está vacío
+        return None
+    
+def generar_datos_conductores(num_conductores):
+   with open('dataRandom/conductores.dat', 'w') as data: 
+    for i in range(num_conductores):
+        DNI =  generar_dni(dnis_generados)
+        nombre = generar_nombre()
+        fechaContrato= generar_fecha_contrato_aleatoria().strftime('%Y-%m-%d')
+        telefono= generar_telefono_aleatorio(conjunto_telefonos)
+        salario = generar_sueldo_aleatorio()
+        CIF_empresa = seleccionar_cif_aleatorio(cifs_generados)
+        data.write(f"{DNI};{nombre};{fechaContrato};{telefono};{salario};{CIF_empresa}\n")
+
+##########################################################################################
+
+
+
+def generar_datos_clientes(num_clientes):
+    nombres_calles = obtener_nombres_calles()
+    with open('dataRandom/clientes.dat', 'w') as data: 
+        for i in range(num_clientes):
+            id_cliente  = i
+            clientes_id_generados.add(id_cliente)
+            nombre = generar_nombre()
+            direccion = random.choice(nombres_calles)
+            provincia = obtener_provincia_aleatoria()
+            email = str(i) +  str(id_cliente) + generar_email_aleatorio() 
+            telefono = generar_telefono_aleatorio(conjunto_telefonos)
+            data.write(f"{id_cliente};{nombre};{direccion};{provincia};{email};{telefono}\n")
+
+##########################################################################################
+def generar_matricula(matriculas_generadas):
+    while True:
+        matricula = ''.join(random.choices(string.ascii_uppercase, k=3)) + \
+                    ''.join(random.choices(string.digits, k=4))
+        if matricula not in matriculas_generadas:
+            matriculas_generadas.add(matricula)
+            return matricula
+
+def marca_modelo_aleatorio():
+    marcas_modelos = {
+        'Toyota': ['Corolla', 'Camry', 'RAV4', 'Prius', 'Highlander'],
+        'Honda': ['Civic', 'Accord', 'CR-V', 'Pilot', 'Odyssey'],
+        'Ford': ['F-150', 'Escape', 'Explorer', 'Focus', 'Mustang'],
+        'Chevrolet': ['Silverado', 'Equinox', 'Tahoe', 'Malibu', 'Traverse'],
+        'Volkswagen': ['Jetta', 'Passat', 'Tiguan', 'Atlas', 'Golf'],
+        # Agrega más marcas y modelos según sea necesario
+    }
+    marca = random.choice(list(marcas_modelos.keys()))
+    modelo = random.choice(marcas_modelos[marca])
+    return marca, modelo
+
+def generar_kilometros_aleatorios():
+    return random.randint(50000, 100000)
+
+def generar_año_matriculacion_aleatorio():
+    # Seleccionar un año aleatorio entre 2000 y 2020
+    año = random.randint(2000, 2020)
+    # Seleccionar un mes y un día aleatorio dentro del año seleccionado
+    mes = random.randint(1, 12)
+     # Si el mes es febrero (2), generamos el día aleatoriamente entre 1 y 28
+    if mes == 2:
+        dia = random.randint(1, 28)
+    # Si el mes tiene 30 días, generamos el día aleatoriamente entre 1 y 30
+    elif mes in [4, 6, 9, 11]:
+        dia = random.randint(1, 30)
+    # Si el mes tiene 31 días, generamos el día aleatoriamente entre 1 y 31
+    else:
+        dia = random.randint(1, 31)    
+    # Devolver la fecha de contrato generada
+    return datetime(año, mes, dia)
+
+
+def seleccionar_dni_aleatorio(dnis_generados):
+    # Verifica si hay CIFs en el conjunto
+    if dnis_generados:
+        # Elige un CIF aleatorio del conjunto y lo devuelve
+        return random.choice(list(dnis_generados))
+    else:
+        # Devuelve None si el conjunto está vacío
+        return None
+
+
+def generar_datos_vehiculos(num_vehiculos):
+    with open('dataRandom/vehiculos.dat', 'w') as data: 
+        for i in range(num_vehiculos):
+            matricula  = generar_matricula(matriculas_generadas)
+            marca, modelo = marca_modelo_aleatorio()
+            kilometros = generar_kilometros_aleatorios()
+            fecha_matricula = generar_año_matriculacion_aleatorio().strftime('%Y-%m-%d')
+            DNI_conductores = seleccionar_dni_aleatorio(dnis_generados)
+            data.write(f"{matricula};{marca};{modelo};{kilometros};{fecha_matricula};{DNI_conductores}\n")           
+
+##########################################################################################
+
+def generar_peso_aleatorio():
+    # Generar un peso aleatorio entre 100 gramos y 10000 kilogramos
+    peso = random.randrange(1, 10000)
+    return peso
+
+def generar_fecha_salida_aleatoria():
+    # Seleccionar un día aleatorio dentro del año 2023
+    fecha_salida = datetime(2023, random.randint(1, 12), random.randint(1, 28))
+    return fecha_salida
+
+def generar_fecha_llegada(fecha_salida):
+    # Generar un número aleatorio de días entre 1 y 10
+    dias = random.randint(1, 10)
+    # Calcular la fecha de llegada sumándole el número de días aleatorios a la fecha de salida
+    fecha_llegada = fecha_salida + timedelta(days=dias)
+    return fecha_llegada
+
+
+def seleccionar_matricula_aleatorio(matriculas_generadas):
+    # Verifica si hay CIFs en el conjunto
+    if matriculas_generadas:
+        # Elige un CIF aleatorio del conjunto y lo devuelve
+        return random.choice(list(matriculas_generadas))
+    else:
+        # Devuelve None si el conjunto está vacío
+        return None
+    
+def seleccionar_id_cliente_aleatorio(clientes_id_generados):
+    # Verifica si hay CIFs en el conjunto
+    if clientes_id_generados:
+        # Elige un CIF aleatorio del conjunto y lo devuelve
+        return random.choice(list(clientes_id_generados))
+    else:
+        # Devuelve None si el conjunto está vacío
+        return None
+
+#fechaContrato= generar_fecha_contrato_aleatoria().strftime('%Y-%m-%d')
+
+
+def generar_datos_bultos(num_bultos):
+    nombres_calles = obtener_nombres_calles()
+    listaClientes=list(clientes_id_generados)
+    listaMatriculas=list(matriculas_generadas)
+    with open('dataRandom/bultos.dat', 'w') as data: 
+        for i in range(num_bultos):
+            id_bulto  = i
+            direccion_origen =  str(random.randint(1, 200)) + random.choice(nombres_calles)
+            direccion_destino = str(random.randint(1, 200))  + random.choice(nombres_calles)
+            provincia_origen = obtener_provincia_aleatoria()
+            provincia_destino = obtener_provincia_aleatoria()
+            peso = generar_peso_aleatorio()
+            fecha_salida = generar_fecha_salida_aleatoria()
+            fecha_llegada = generar_fecha_llegada(fecha_salida)
+            fecha_salida = fecha_salida.strftime('%Y-%m-%d')
+            fecha_llegada = fecha_llegada.strftime('%Y-%m-%d')
+            matricula_vehiculos = random.choice(listaMatriculas)
+            id_cliente_clientes = random.choice(listaClientes)
+            data.write(f"{id_bulto};{direccion_origen};{direccion_destino};{provincia_origen};{provincia_destino};{peso};{fecha_salida};{fecha_llegada};{matricula_vehiculos};{id_cliente_clientes}\n")            
+
+##########################################################################################
+matriculas_generadas = set()
+dnis_generados = set()
+cifs_generados = set()
+clientes_id_generados = set()
+conjunto_telefonos = set()
+
+generar_datos_empresa(10000)
+generar_datos_conductores(200000)
+generar_datos_clientes(2000000)
+generar_datos_vehiculos(1000000)
+generar_datos_bultos(20000000)
+```
+
+
+
+
+```
+python3 generateRandomDat.py
+```
+
+```
+sftp> ls
+bultos.dat            clientes.dat          conductores.dat
+empresas.dat          vehiculos.dat
+sftp> put *
+```
+
+```
+felix@postgresql01:~/pl2/dbLogistica/data$ pwd
+/home/felix/pl2/dbLogistica/data
+felix@postgresql01:~/pl2/dbLogistica/data$ cp * /tmp/
+```
+
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+
+
+Cuestión 8: Realizar la carga masiva de los datos generados en la cuestión 7 en la base
+de datos Logística. Indicar el proceso seguido y el orden de carga de las tablas,
+explicando el porqué de dicho orden; y asegurando la consistencia e integridad de los
+datos cargados. Comparar los tiempos en las tablas implicadas y explicar a qué es
+debida la diferencia. ¿Existe diferencia entre los tiempos que ha obtenido y los que
+aparecen en el LOG de operaciones de postgreSQL? ¿Por qué?
+
+
+
+EJEMPLOS de insercción single row:
+
+```
+EMPRESA OK:
+INSERT INTO public.empresas ("CIF", nombre, direccion, "Provincia", email, telefono)
+VALUES ('123456789', 'Empresa Ejemplo', 'Calle Ejemplo 123', 'Ejemplo', 'ejemplo@empresa.com', 123456789);
+
+CONDUCTOR OK: DEBE EXISTIR EL CIF EN EMPRESA:
+INSERT INTO public.conductores ("DNI", nombre, fecha_contrato, telefono, salario, "CIF_empresas")
+VALUES ('123456789', 'Juan Perez', '2024-03-17', 123456789, 1500.00, '123456789');
+
+
+CLIENTES OK:
+INSERT INTO public.clientes (id_cliente, nombre, direccion, provincia, email, telefono)
+VALUES (1, 'Cliente Ejemplo', 'Calle Ejemplo 123', 'Ejemplo', 'cliente@example.com', 123456789);
+
+
+VEHICULOS: DNI CONDUCTOR 
+INSERT INTO public.vehiculos (matricula, marca, modelo, kilometros, fecha_matricula, "DNI_conductores")
+VALUES ('ABC1234', 'Marca Ejemplo', 'Modelo Ejemplo', 10000, '2022-01-01', '123456789');
+
+BULTOS: ID DE CLIENTES, MATRICULA DE VEHICULOS
+INSERT INTO public.bultos (id_bulto, direccion_origen, direccion_destino, provincia_origen, provincia_destino, peso, fecha_salida, fecha_llegada, matricula_vehiculos, id_cliente_clientes)
+VALUES (1, 'Calle Origen 123', 'Calle Destino 456', 'Provincia Origen', 'Provincia Destino', 10.5, '2024-03-17', '2024-03-18', 'ABC1231', 1);
+```
+
+```
+\copy empresas("CIF", nombre, direccion, "Provincia", email, telefono) FROM '/tmp/empresas.dat' DELIMITER ';' CSV
+\copy conductores("DNI", nombre, fecha_contrato, telefono, salario, "CIF_empresas") FROM '/tmp/conductores.dat' DELIMITER ';' CSV
+\copy clientes(id_cliente, nombre, direccion, provincia, email, telefono) FROM '/tmp/clientes.dat' DELIMITER ';' CSV
+\copy vehiculos(matricula, marca, modelo, kilometros, fecha_matricula, "DNI_conductores") FROM '/tmp/vehiculos.dat' DELIMITER ';' CSV
+\copy bultos(id_bulto, direccion_origen, direccion_destino, provincia_origen, provincia_destino, peso, fecha_salida, fecha_llegada, matricula_vehiculos, id_cliente_clientes) FROM '/tmp/bultos.dat' DELIMITER ';' CSV
+```
+
+
+Volcado de datos:
+```
+\copy empresas("CIF", nombre, direccion, "Provincia", email, telefono) FROM '/tmp/empresas.dat' DELIMITER ';' CSV
+COPY 10000
+Time: 74.102 ms
+```
+
+```
+select count(*) from  empresas;
+ count 
+-------
+ 10000
+(1 row)
+```
+
+```
+\copy conductores("DNI", nombre, fecha_contrato, telefono, salario, "CIF_empresas") FROM '/tmp/conductores.dat' DELIMITER ';' CSV
+COPY 200000
+Time: 2250.494 ms (00:02.250)
+```
+
+```
+select count(*) from  conductores;
+ count  
+--------
+ 200000
+```
+
+
+```
+\copy clientes(id_cliente, nombre, direccion, provincia, email, telefono) FROM '/tmp/clientes.dat' DELIMITER ';' CSV
+COPY 2000000
+Time: 12409.685 ms (00:12.410)
+```
+
+```
+select count(*) from  clientes;
+  count  
+---------
+ 2000000
+(1 row)
+```
+
+
+```
+\copy vehiculos(matricula, marca, modelo, kilometros, fecha_matricula, "DNI_conductores") FROM '/tmp/vehiculos.dat' DELIMITER ';' CSV
+COPY 1000000
+Time: 15919.455 ms (00:15.919)
+```
+
+```
+select count(*) from  vehiculos;
+  count  
+---------
+ 1000000
+(1 row)
+```
+
+
+```
+ \copy bultos(id_bulto, direccion_origen, direccion_destino, provincia_origen, provincia_destino, peso, fecha_salida, fecha_llegada, matricula_vehiculos, id_cliente_clientes) FROM '/tmp/bultos.dat' DELIMITER ';' CSV
+COPY 20000000
+Time: 612474.243 ms (10:12.474)
+```
+
+```
+select count(*) from  bultos;
+  count   
+----------
+ 20000000
+(1 row)
+```
+
+LOGS DE COPY:
+
+```
+ UTC [2092]LOG:  statement: COPY  empresas ( "CIF" , nombre, direccion, "Provincia" , email, telefono ) FROM STDIN DELIMITER ';' CSV
+[DNI: XXXX & XXXX] [host: [local]] 2024-03-18 23:50:50.530 UTC [2092]LOG:  statement: COPY  conductores ( "DNI" , nombre, fecha_contrato, telefono, salario, "CIF_empresas" ) FROM STDIN DELIMITER ';' CSV
+[DNI: XXXX & XXXX] [host: [local]] 2024-03-18 23:51:08.328 UTC [2092]LOG:  statement: COPY  clientes ( id_cliente, nombre, direccion, provincia, email, telefono ) FROM STDIN DELIMITER ';' CSV
+[DNI: XXXX & XXXX] [host: ] 2024-03-18 23:51:19.537 UTC [773]LOG:  checkpoint starting: wal
+[DNI: XXXX & XXXX] [host: [local]] 2024-03-18 23:51:42.334 UTC [2092]LOG:  statement: COPY  vehiculos ( matricula, marca, modelo, kilometros, fecha_matricula, "DNI_conductores" ) FROM STDIN DELIMITER ';' CSV
+```
+
+LOGS de COPY LLENADO DE VM:
+
+```
+PANIC:  could not write to file "pg_wal/xlogtemp.2092": No space left on device
+```
+
+Segunda copia de tabla bultos:
+
+```
+[DNI: XXXX & XXXX] [host: [local]] 2024-03-18 23:57:46.309 UTC [14804]LOG:  statement: COPY  bultos ( id_bulto, direccion_origen, direccion_destino, provincia_origen, provincia_destino, peso, fecha_salida, fecha_llegada, matricula_vehiculos, id_cliente_clientes ) FROM STDIN DELIMITER ';' CSV
+[DNI: XXXX & XXXX] [host: ] 2024-03-18 23:57:50.415 UTC [14776]LOG:  checkpoint complete: wrote 4245 buffers (25.9%); 0 WAL file(s) added, 0 removed, 33 recycled; write=95.488 s, sync=0.266 s, total=96.291 s; sync files=15, longest=0.116 s, average=0.018 s; distance=540945 kB, estimate=900893 kB; lsn=43/67729820, redo lsn=43/49044D28
+```
