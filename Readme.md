@@ -595,7 +595,7 @@ de 24000 euros y trabajan menos de 3 horas en ellos. ¿Son correctos los resulta
 del comando EXPLAIN? ¿Por qué? Comparar con lo que se obtendría con lo visto en
 teoría obteniendo las estadísticas de las tablas con postgres.
 
-````
+```
 explain select * from proyectos
 join trabaja_proyectos on proyectos.numero_proyecto = trabaja_proyectos.numero_proyecto
 join empleados on trabaja_proyectos.numero_empleado = empleados.numero_empleado
