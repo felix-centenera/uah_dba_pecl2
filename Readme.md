@@ -559,7 +559,29 @@ resultados del comando EXPLAIN? ¿Por qué? Comparar con lo que se obtendría co
 
  (FALTA COMPARAR CON LO VISTO EN TEORÍA)
 
-EXPLAIN SELECT p.* FROM proyectos p JOIN trabaja_proyectos tp ON p.numero_proyecto = tp.numero_proyecto WHERE tp.horas = 8;
+```
+explain select * from proyectos
+join trabaja_proyectos on proyectos.numero_proyecto = trabaja_proyectos.numero_proyecto
+join empleados on trabaja_proyectos.numero_empleado = empleados.numero_empleado
+where trabaja_proyectos.hora = 8
+
+```
+
+Este es el explain de la sentencia:
+
+"Gather  (cost=127429.69..217604.81 rows=409338 width=97)"
+"  Workers Planned: 2"
+"  ->  Parallel Hash Join  (cost=126429.69..175671.01 rows=170558 width=97)"
+"        Hash Cond: (empleados.numero_empleado = trabaja_proyectos.numero_empleado)"
+"        ->  Parallel Seq Scan on empleados  (cost=0.00..27006.33 rows=833333 width=41)"
+"        ->  Parallel Hash  (cost=122631.71..122631.71 rows=170558 width=56)"
+"              ->  Hash Join  (cost=3957.00..122631.71 rows=170558 width=56)"
+"                    Hash Cond: (trabaja_proyectos.numero_proyecto = proyectos.numero_proyecto)"
+"                    ->  Parallel Seq Scan on trabaja_proyectos  (cost=0.00..115778.97 rows=170558 width=16)"
+"                          Filter: (hora = '8'::numeric)"
+"                    ->  Hash  (cost=1925.00..1925.00 rows=100000 width=40)"
+"                          ->  Seq Scan on proyectos  (cost=0.00..1925.00 rows=100000 width=40)"
+
 
 ----------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------
@@ -573,6 +595,27 @@ de 24000 euros y trabajan menos de 3 horas en ellos. ¿Son correctos los resulta
 del comando EXPLAIN? ¿Por qué? Comparar con lo que se obtendría con lo visto en
 teoría obteniendo las estadísticas de las tablas con postgres.
 
+```
+explain select * from proyectos
+join trabaja_proyectos on proyectos.numero_proyecto = trabaja_proyectos.numero_proyecto
+join empleados on trabaja_proyectos.numero_empleado = empleados.numero_empleado
+where proyectos.coste > 10000
+and empleados.salario = 24000
+and trabaja_proyectos.hora < 3;
+```
+
+"Gather  (cost=1000.73..30349.63 rows=13 width=97)"
+"  Workers Planned: 2"
+"  ->  Nested Loop  (cost=0.73..29348.33 rows=5 width=97)"
+"        ->  Nested Loop  (cost=0.43..29346.74 rows=5 width=57)"
+"              ->  Parallel Seq Scan on empleados  (cost=0.00..29089.67 rows=9 width=41)"
+"                    Filter: (salario = '24000'::numeric)"
+"              ->  Index Scan using trabaja_proyectos_pkey on trabaja_proyectos  (cost=0.43..28.55 rows=1 width=16)"
+"                    Index Cond: (numero_empleado = empleados.numero_empleado)"
+"                    Filter: (hora < '3'::numeric)"
+"        ->  Index Scan using proyectos_pkey on proyectos  (cost=0.29..0.32 rows=1 width=40)"
+"              Index Cond: (numero_proyecto = trabaja_proyectos.numero_proyecto)"
+"              Filter: (coste > '10000'::numeric)"
 
 
 ----------------------------------------------------------------------------------------------------------
